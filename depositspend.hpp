@@ -38,6 +38,16 @@ namespace depositspend
    EOSIO_REFLECT(account, owner, balance, num_dogs, num_cats)
    typedef eosio::multi_index<"accounts"_n, account> accounts;
 
+   // Give the tester and other contracts an easy way to read the table
+   inline eosio::asset get_balance(eosio::name contract, eosio::name owner)
+   {
+      accounts table(contract, default_scope);
+      auto record = table.find(owner.value);
+      if (record != table.end())
+         return record->balance;
+      return eosio::asset{0, token_symbol};
+   }
+
    // The contract
    struct depositspend_contract : public eosio::contract
    {
@@ -63,16 +73,6 @@ namespace depositspend
       void add_balance(eosio::name owner, const eosio::asset& value);
       void sub_balance(eosio::name owner, const eosio::asset& value, auto modify_fields);
    };
-
-   // Give the tester and other contracts an easy way to read the table
-   inline eosio::asset get_balance(eosio::name contract, eosio::name owner)
-   {
-      accounts table(contract, default_scope);
-      auto record = table.find(owner.value);
-      if (record != table.end())
-         return record->balance;
-      return eosio::asset{0, token_symbol};
-   }
 
    // Creates a part of the dispatcher. Also defines action wrappers which make it easy for other
    // contracts and for test cases to invoke this contract's actions.
