@@ -34,6 +34,8 @@ namespace depositspend
 
    void depositspend_contract::buydog(eosio::name user, eosio::name dog, const eosio::asset& price)
    {
+      eosio::print("Example print for debugging. ", user, " wants to buy a dog named ", dog,
+                   " for ", price);
       require_auth(user);
       eosio::check(price == dog_price, "incorrect price for a dog");
       sub_balance(user, price, [](auto& account) { ++account.num_dogs; });

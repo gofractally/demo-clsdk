@@ -27,9 +27,15 @@ target_link_libraries(depositspend eosio-contract-simple-malloc)
 add_executable(test-depositspend test-depositspend.cpp)
 target_link_libraries(test-depositspend cltestlib)
 
-# Create a ctest rule to use test-depositspend.wasm
+# ctest rule which runs test-depositspend.wasm. The -v and -s
+# options provide detailed logging. ctest hides this detail;
+# use `ctest -V` so show it.
 enable_testing()
 add_test(
     NAME deposit-and-spend
     COMMAND cltester -v test-depositspend.wasm -s
 )
+
+# Generate compile_commands.json during build to enable
+# symbol lookup in some editors
+set(CMAKE_EXPORT_COMPILE_COMMANDS on)
