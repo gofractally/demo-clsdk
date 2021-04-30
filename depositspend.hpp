@@ -64,6 +64,16 @@ namespace depositspend
       void sub_balance(eosio::name owner, const eosio::asset& value, auto modify_fields);
    };
 
+   // Give the tester and other contracts an easy way to read the table
+   inline eosio::asset get_balance(eosio::name contract, eosio::name owner)
+   {
+      accounts table(contract, default_scope);
+      auto record = table.find(owner.value);
+      if (record != table.end())
+         return record->balance;
+      return eosio::asset{0, token_symbol};
+   }
+
    // Creates a part of the dispatcher. Also defines action wrappers which make it easy for other
    // contracts and for test cases to invoke this contract's actions.
    EOSIO_ACTIONS(depositspend_contract,

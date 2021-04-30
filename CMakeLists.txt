@@ -9,6 +9,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # Libraries for building contracts and tests
 add_subdirectory(${CLSDK_PREFIX} clsdk)
 
+# Builds depositspend.wasm contract
 # Contracts may link to either:
 #   * eosio-contract-simple-malloc: This library builds contracts with
 #     small and fast memory allocation. free() is a no-op. Most contracts
@@ -20,3 +21,15 @@ add_subdirectory(${CLSDK_PREFIX} clsdk)
 #     will be larger and slower.
 add_executable(depositspend depositspend.cpp)
 target_link_libraries(depositspend eosio-contract-simple-malloc)
+
+# Builds test-depositspend.wasm
+# Tests must link to cltestlib
+add_executable(test-depositspend test-depositspend.cpp)
+target_link_libraries(test-depositspend cltestlib)
+
+# Create a ctest rule to use test-depositspend.wasm
+enable_testing()
+add_test(
+    NAME deposit-and-spend
+    COMMAND cltester -v test-depositspend.wasm -s
+)

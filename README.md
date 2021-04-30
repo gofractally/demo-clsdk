@@ -11,6 +11,7 @@ mkdir build
 cd build
 cmake `clsdk-cmake-args` ..
 make -j
+ctest
 ```
 
 ### Ubuntu 20.04
