@@ -87,8 +87,6 @@ TEST_CASE("This is the first test")
    // some shortcuts
    auto alice = t.as("alice"_n);
    auto bob = t.as("bob"_n);
-   auto jane = t.as("jane"_n);
-   auto joe = t.as("joe"_n);
 
    // alice tries to deposit the wrong token.
    //
@@ -146,4 +144,62 @@ TEST_CASE("This is the first test")
 
       CHECK(bob_balance == s2a("100.0000 EOS"));
    }
-}
+}  // First test
+
+// To stop repeating ourselves, here's a helpful function
+void check_bal(eosio::name user,
+               const eosio::asset& eosio_token_bal,
+               const eosio::asset& depositspend_bal)
+{
+   CHECK(token::contract::get_balance("eosio.token"_n, user, symbol_code{"EOS"}) ==
+         eosio_token_bal);
+   CHECK(depositspend::get_balance("depositspend"_n, user) == depositspend_bal);
+};
+
+TEST_CASE("This is the second test")
+{
+   {
+      // This starts a whole new chain. The tester shutdown and destroyed the first test's chain at
+      // the end of the first test.
+      test_chain t;
+      setup_token(t);
+      fund_users(t);
+      setup_depositspend(t);
+      auto bob = t.as("bob"_n);
+
+      // Let's verify balances before and after the transfer
+      check_bal("bob"_n, s2a("10000.0000 EOS"), s2a("0.0000 EOS"));
+      bob.act<token::actions::transfer>("bob"_n, "depositspend"_n, s2a("100.0000 EOS"), "");
+      check_bal("bob"_n, s2a("9900.0000 EOS"), s2a("100.0000 EOS"));
+
+      // Bob withdraws some
+      check_bal("bob"_n, s2a("9900.0000 EOS"), s2a("100.0000 EOS"));
+      bob.act<depositspend::actions::withdraw>("bob"_n, s2a("10.0000 EOS"));
+      check_bal("bob"_n, s2a("9910.0000 EOS"), s2a("90.0000 EOS"));
+   }
+
+   {
+      // Another? Yep. The one above was destroyed at the }.
+      test_chain t;
+      setup_token(t);
+      fund_users(t);
+      setup_depositspend(t);
+
+      // You get a dog. She gets a dog. Everyone gets a dog.
+      for (auto user : {"alice"_n, "bob"_n, "jane"_n, "joe"_n})
+      {
+         // They are a bit pricey
+         check_bal(user, s2a("10000.0000 EOS"), s2a("0.0000 EOS"));
+         t.as(user).act<token::actions::transfer>(user, "depositspend"_n, s2a("1000.0000 EOS"), "");
+         check_bal(user, s2a("9000.0000 EOS"), s2a("1000.0000 EOS"));
+
+         // There's an infinite supply of dogs with any given name
+         t.as(user).act<depositspend::actions::buydog>(user, "skippy"_n, s2a("1000.0000 EOS"));
+         check_bal(user, s2a("9000.0000 EOS"), s2a("0.0000 EOS"));
+
+         // Verify the dog is accounted for
+         depositspend::accounts table("depositspend"_n, depositspend::default_scope);
+         CHECK(table.get(user.value).num_dogs == 1);
+      }
+   }
+}  // Second test
