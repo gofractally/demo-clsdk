@@ -61,7 +61,7 @@ pending console output: Example print for debugging. alice wants to buy a dog na
 tester wasm asserted: transaction failed with status hard_fail
 ```
 
-Unfortunately, this error doesn't directly indicate where in failure occurred. We hope to address this limitation in a future release. There is a way to narrow it down. Run this:
+Unfortunately, this error doesn't directly indicate where in the test sequence the failure occurred. We hope to address this limitation in a future release. There is a way to narrow it down. Run this:
 
 ```sh
 cltester test-depositspend.wasm -s
@@ -123,5 +123,7 @@ cd ~/work
 wget https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-12/wasi-sdk-12.0-linux.tar.gz
 tar xf wasi-sdk-12.0-linux.tar.gz
 
-TODO: ...
+cd ~/work
+wget https://github.com/eoscommunity/Eden/releases/download/sdk-v0.0.1-alpha/clsdk-ubuntu-20-04.tar.gz
+tar xf clsdk-ubuntu-20-04.tar.gz
 ```
