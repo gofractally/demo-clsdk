@@ -18,7 +18,7 @@ void setup_token(test_chain& t)
    // * active:
    //    * threshold = 1
    //    * public keys: [default_pub_key]
-   //    * accounts: [eosio.token@active]
+   //    * accounts: [eosio.token@eosio.code]
    //
    // There are several overloads of create_account() and create_code_account() which cover common
    // cases plus provide full flexibility when needed.
