@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Libraries for building contracts and tests
-add_subdirectory(${CLSDK_PREFIX} clsdk)
+find_package(clsdk REQUIRED)
 
 # Builds depositspend.wasm contract
 # Contracts may link to either:
