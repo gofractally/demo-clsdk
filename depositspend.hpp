@@ -12,6 +12,7 @@ namespace depositspend
    extern const char* withdraw_ricardian;
    extern const char* buydog_ricardian;
    extern const char* buycat_ricardian;
+   extern const char* pet_name_clause;
 
    // The account this contract is normally deployed to
    inline constexpr auto default_contract_account = "depositspend"_n;

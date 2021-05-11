@@ -82,6 +82,6 @@ namespace depositspend
 EOSIO_ACTION_DISPATCHER(depositspend::actions)
 
 // Things to populate the ABI with
-EOSIO_ABIGEN(  //
-    actions(depositspend::actions),
-    table("accounts"_n, depositspend::account))
+EOSIO_ABIGEN(actions(depositspend::actions),
+             table("accounts"_n, depositspend::account),
+             ricardian_clause("Naming your pet", depositspend::pet_name_clause))

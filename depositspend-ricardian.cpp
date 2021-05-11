@@ -15,3 +15,9 @@ Dogs come in many different sizes, colors, and designs. No matter what the desig
 const char* depositspend::buycat_ricardian = R"(
 We're now running a 2-for-1 special on cats.
 )";
+
+const char* depositspend::pet_name_clause = R"(
+Choosing a name for your pet is an important step. There are many considerations to be made, such as which names are the most adorable, which names are the most utilitarian, and how much time you have to devote to making this important decision.
+
+Don't make the mistake of asking for help. If you have, chances are, the people that have shared with you the names of their pets are doing this to extend the lives of their pets.
+)";
