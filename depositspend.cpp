@@ -76,8 +76,12 @@ namespace depositspend
          modify_fields(a);
       });
    }
-
-   // Final part of the dispatcher
-   EOSIO_ACTION_DISPATCHER(actions)
-
 }  // namespace depositspend
+
+// Final part of the dispatcher
+EOSIO_ACTION_DISPATCHER(depositspend::actions)
+
+// Things to populate the ABI with
+EOSIO_ABIGEN(  //
+    actions(depositspend::actions),
+    table("accounts"_n, depositspend::account))
