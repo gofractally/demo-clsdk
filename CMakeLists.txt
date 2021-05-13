@@ -22,6 +22,16 @@ find_package(clsdk REQUIRED)
 add_executable(depositspend depositspend.cpp)
 target_link_libraries(depositspend eosio-contract-simple-malloc)
 
+# Generate depositspend.abi
+# This is a 2-step process:
+#   * Build depositspend.abi.wasm. This must link to eosio-contract-abigen.
+#   * Run the wasm to generate the abi
+add_executable(depositspend-abigen depositspend.cpp depositspend-ricardian.cpp)
+target_link_libraries(depositspend-abigen eosio-contract-abigen)
+add_custom_command(TARGET depositspend-abigen POST_BUILD
+    COMMAND cltester depositspend-abigen.wasm >depositspend.abi
+)
+
 # Builds test-depositspend.wasm
 # Tests must link to cltestlib
 add_executable(test-depositspend test-depositspend.cpp)

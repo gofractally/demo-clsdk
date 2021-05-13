@@ -8,6 +8,12 @@
 // The dispatcher expects the contract class to be in a namespace
 namespace depositspend
 {
+   // Ricardian contracts live in depositspend-ricardian.cpp
+   extern const char* withdraw_ricardian;
+   extern const char* buydog_ricardian;
+   extern const char* buycat_ricardian;
+   extern const char* pet_name_clause;
+
    // The account this contract is normally deployed to
    inline constexpr auto default_contract_account = "depositspend"_n;
 
@@ -74,12 +80,18 @@ namespace depositspend
       void sub_balance(eosio::name owner, const eosio::asset& value, auto modify_fields);
    };
 
-   // Creates a part of the dispatcher. Also defines action wrappers which make it easy for other
-   // contracts and for test cases to invoke this contract's actions.
+   // This macro:
+   // * Creates a part of the dispatcher
+   // * Defines action wrappers which make it easy for other contracts and for test cases to invoke
+   //   this contract's actions
+   // * Optional: provides the names of actions to the ABI generator. Without this, the ABI
+   //   generator will make up names (e.g. arg0, arg1, arg2, ...).
+   // * Optional: provides ricardian contracts to the ABI generator. Without this, the ABI generator
+   //   will leave the ricardian contracts blank.
    EOSIO_ACTIONS(depositspend_contract,
                  default_contract_account,
-                 withdraw,
-                 buydog,
-                 buycat,
+                 action(withdraw, user, quantity, ricardian_contract(withdraw_ricardian)),
+                 action(buydog, user, dog, price, ricardian_contract(buydog_ricardian)),
+                 action(buycat, user, cat, price, ricardian_contract(buycat_ricardian)),
                  notify(token_contract, transfer))
 }  // namespace depositspend
