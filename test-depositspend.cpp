@@ -7,8 +7,18 @@
 
 using namespace eosio;
 
+// EOSIO_HERE(x) constructs a stack entry for error messages. The argument
+// is the previous entry in the stack. Tester functions don't need the stack
+// argument (it's optional), but produce more helpful errors when it's present.
+//
+// H ("here") is a shortcut for using EOSIO_HERE.
+#define H EOSIO_HERE(stack)
+
+// Default (empty) call stack for H
+inline constexpr const call_stack* stack = nullptr;
+
 // Set up the token contract
-void setup_token(test_chain& t)
+void setup_token(const call_stack* stack, test_chain& t)
 {
    // This creates the eosio.token account with the following authorities:
    // * owner:
@@ -22,23 +32,25 @@ void setup_token(test_chain& t)
    //
    // There are several overloads of create_account() and create_code_account() which cover common
    // cases plus provide full flexibility when needed.
-   t.create_code_account("eosio.token"_n);
+   t.create_code_account(H, "eosio.token"_n);
 
    // Set the code
-   t.set_code("eosio.token"_n, CLSDK_CONTRACTS_DIR "token.wasm");
+   t.set_code(H, "eosio.token"_n, CLSDK_CONTRACTS_DIR "token.wasm");
 
    // Create and issue tokens.
    //
    // * as("eosio.token"_n) means use eosio.token's active authority. The tester uses
    //   default_priv_key (5KQwrPbwdL6PhXujxW37FSSQZ1JiwsST4cqQzDeyXtP79zkvFD3) to sign.
-   // * act<...>(...) sends a single transaction and verifies it was successful
-   // * token::actions::* is defined by EOSIO_ACTIONS(...) in token/token.hpp
+   // * act<...>(...) sends a single transaction and verifies it was successful.
+   //   * token::actions::* is defined by EOSIO_ACTIONS(...) in token/token.hpp
+   //   * The first argument within (...) may be the call stack; this is optional.
+   //     The remaining arguments are passed to the action.
    // * s2a (string-to-asset) is a shortcut for constructing assets
 
-   t.as("eosio.token"_n).act<token::actions::create>("eosio"_n, s2a("1000000.0000 EOS"));
-   t.as("eosio.token"_n).act<token::actions::create>("eosio"_n, s2a("1000000.0000 OTHER"));
-   t.as("eosio"_n).act<token::actions::issue>("eosio"_n, s2a("1000000.0000 EOS"), "");
-   t.as("eosio"_n).act<token::actions::issue>("eosio"_n, s2a("1000000.0000 OTHER"), "");
+   t.as("eosio.token"_n).act<token::actions::create>(H, "eosio"_n, s2a("1000000.0000 EOS"));
+   t.as("eosio.token"_n).act<token::actions::create>(H, "eosio"_n, s2a("1000000.0000 OTHER"));
+   t.as("eosio"_n).act<token::actions::issue>(H, "eosio"_n, s2a("1000000.0000 EOS"), "");
+   t.as("eosio"_n).act<token::actions::issue>(H, "eosio"_n, s2a("1000000.0000 OTHER"), "");
 
    // Uh-oh, someone's up to no good
    //
@@ -46,33 +58,34 @@ void setup_token(test_chain& t)
    // contract in the action wrappers. act<...> and trace<...> normally send the action to the
    // default. with_code() overrides that.
 
-   t.create_code_account("hacker.token"_n);
-   t.set_code("hacker.token"_n, CLSDK_CONTRACTS_DIR "token.wasm");
+   t.create_code_account(H, "hacker.token"_n);
+   t.set_code(H, "hacker.token"_n, CLSDK_CONTRACTS_DIR "token.wasm");
    t.as("hacker.token"_n)
        .with_code("hacker.token"_n)
-       .act<token::actions::create>("hacker.token"_n, s2a("1000000.0000 EOS"));
+       .act<token::actions::create>(H, "hacker.token"_n, s2a("1000000.0000 EOS"));
    t.as("hacker.token"_n)
        .with_code("hacker.token"_n)
-       .act<token::actions::issue>("hacker.token"_n, s2a("1000000.0000 EOS"), "");
+       .act<token::actions::issue>(H, "hacker.token"_n, s2a("1000000.0000 EOS"), "");
 }
 
-void fund_users(test_chain& t)
+void fund_users(const call_stack* stack, test_chain& t)
 {
    for (auto user : {"alice"_n, "bob"_n, "jane"_n, "joe"_n})
    {
-      t.create_account(user);
-      t.as("eosio"_n).act<token::actions::transfer>("eosio"_n, user, s2a("10000.0000 EOS"), "");
-      t.as("eosio"_n).act<token::actions::transfer>("eosio"_n, user, s2a("10000.0000 OTHER"), "");
+      t.create_account(H, user);
+      t.as("eosio"_n).act<token::actions::transfer>(H, "eosio"_n, user, s2a("10000.0000 EOS"), "");
+      t.as("eosio"_n).act<token::actions::transfer>(H, "eosio"_n, user, s2a("10000.0000 OTHER"),
+                                                    "");
       t.as("hacker.token"_n)
           .with_code("hacker.token"_n)
-          .act<token::actions::transfer>("hacker.token"_n, user, s2a("10000.0000 EOS"), "");
+          .act<token::actions::transfer>(H, "hacker.token"_n, user, s2a("10000.0000 EOS"), "");
    }
 }
 
-void setup_depositspend(test_chain& t)
+void setup_depositspend(const call_stack* stack, test_chain& t)
 {
-   t.create_code_account("depositspend"_n);
-   t.set_code("depositspend"_n, "depositspend.wasm");
+   t.create_code_account(H, "depositspend"_n);
+   t.set_code(H, "depositspend"_n, "depositspend.wasm");
 }
 
 TEST_CASE("This is the first test")
@@ -80,9 +93,9 @@ TEST_CASE("This is the first test")
    // This starts a single-producer chain
    test_chain t;
 
-   setup_token(t);
-   fund_users(t);
-   setup_depositspend(t);
+   setup_token(H, t);
+   fund_users(H, t);
+   setup_depositspend(H, t);
 
    // some shortcuts
    auto alice = t.as("alice"_n);
@@ -92,17 +105,19 @@ TEST_CASE("This is the first test")
    //
    // * trace<...>(...) sends a single transaction, but does not verify success. Instead it returns
    //   a transaction trace.
-   // * expect(trace, msg)
-   //    * if msg == nullptr, verifies the transaction was successful
-   //    * if msg != nullptr, verifies the transaction failed, and the error message contains msg
+   // * expect(stack, trace, msg)
+   //    * If msg == nullptr, verifies the transaction was successful
+   //    * If msg != nullptr, verifies the transaction failed, and the error message contains msg
    //      within it (partial match)
-   expect(alice.trace<token::actions::transfer>(  //
+   //    * The stack argument (H) is optional
+   expect(H,
+          alice.trace<token::actions::transfer>(  //
               "alice"_n, "depositspend"_n, s2a("100.0000 OTHER"), ""),
           "This contract does not deal with this token");
 
    // alice tries again, this time with hacker EOS
    alice.with_code("hacker.token"_n)
-       .act<token::actions::transfer>("alice"_n, "depositspend"_n, s2a("100.0000 EOS"), "");
+       .act<token::actions::transfer>(H, "alice"_n, "depositspend"_n, s2a("100.0000 EOS"), "");
 
    // But wait, the act<> succeeded! (otherwise the test would have reported an error). The
    // EOSIO_ACTIONS() entry for the contract has this:
@@ -129,7 +144,7 @@ TEST_CASE("This is the first test")
    CHECK(depositspend::get_balance("depositspend"_n, "alice"_n) == s2a("0.0000 EOS"));
 
    // bob makes a real deposit
-   bob.act<token::actions::transfer>("bob"_n, "depositspend"_n, s2a("100.0000 EOS"), "");
+   bob.act<token::actions::transfer>(H, "bob"_n, "depositspend"_n, s2a("100.0000 EOS"), "");
    CHECK(depositspend::get_balance("depositspend"_n, "bob"_n) == s2a("100.0000 EOS"));
 
    // Let's revisit depositspend::get_balance(). Since it's not an action, it's not calling into the
@@ -162,39 +177,40 @@ TEST_CASE("This is the second test")
       // This starts a whole new chain. The tester shutdown and destroyed the first test's chain at
       // the end of the first test.
       test_chain t;
-      setup_token(t);
-      fund_users(t);
-      setup_depositspend(t);
+      setup_token(H, t);
+      fund_users(H, t);
+      setup_depositspend(H, t);
       auto bob = t.as("bob"_n);
 
       // Let's verify balances before and after the transfer
       check_bal("bob"_n, s2a("10000.0000 EOS"), s2a("0.0000 EOS"));
-      bob.act<token::actions::transfer>("bob"_n, "depositspend"_n, s2a("100.0000 EOS"), "");
+      bob.act<token::actions::transfer>(H, "bob"_n, "depositspend"_n, s2a("100.0000 EOS"), "");
       check_bal("bob"_n, s2a("9900.0000 EOS"), s2a("100.0000 EOS"));
 
       // Bob withdraws some
       check_bal("bob"_n, s2a("9900.0000 EOS"), s2a("100.0000 EOS"));
-      bob.act<depositspend::actions::withdraw>("bob"_n, s2a("10.0000 EOS"));
+      bob.act<depositspend::actions::withdraw>(H, "bob"_n, s2a("10.0000 EOS"));
       check_bal("bob"_n, s2a("9910.0000 EOS"), s2a("90.0000 EOS"));
    }
 
    {
       // Another? Yep. The one above was destroyed at the }.
       test_chain t;
-      setup_token(t);
-      fund_users(t);
-      setup_depositspend(t);
+      setup_token(H, t);
+      fund_users(H, t);
+      setup_depositspend(H, t);
 
       // You get a dog. She gets a dog. Everyone gets a dog.
       for (auto user : {"alice"_n, "bob"_n, "jane"_n, "joe"_n})
       {
          // They are a bit pricey
          check_bal(user, s2a("10000.0000 EOS"), s2a("0.0000 EOS"));
-         t.as(user).act<token::actions::transfer>(user, "depositspend"_n, s2a("1000.0000 EOS"), "");
+         t.as(user).act<token::actions::transfer>(H, user, "depositspend"_n, s2a("1000.0000 EOS"),
+                                                  "");
          check_bal(user, s2a("9000.0000 EOS"), s2a("1000.0000 EOS"));
 
          // There's an infinite supply of dogs with any given name
-         t.as(user).act<depositspend::actions::buydog>(user, "skippy"_n, s2a("1000.0000 EOS"));
+         t.as(user).act<depositspend::actions::buydog>(H, user, "skippy"_n, s2a("1000.0000 EOS"));
          check_bal(user, s2a("9000.0000 EOS"), s2a("0.0000 EOS"));
 
          // Verify the dog is accounted for
