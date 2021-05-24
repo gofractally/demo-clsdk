@@ -33,9 +33,10 @@ add_custom_command(TARGET depositspend-abigen POST_BUILD
 )
 
 # Builds test-depositspend.wasm
-# Tests must link to cltestlib
+# Tests must link to either cltestlib (runs faster) or cltestlib-debug
+# (shows stack traces on failure).
 add_executable(test-depositspend test-depositspend.cpp)
-target_link_libraries(test-depositspend cltestlib)
+target_link_libraries(test-depositspend cltestlib-debug)
 
 # ctest rule which runs test-depositspend.wasm. The -v and -s
 # options provide detailed logging. ctest hides this detail;
