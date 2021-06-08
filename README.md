@@ -67,13 +67,13 @@ tester wasm asserted: transaction failed with status hard_fail
 This message includes a stack trace in the test when the failure occurred. One of the entries in the stack points to this line, which has the price assumption:
 
 ```c++
-t.as(user).act<depositspend::actions::buydog>(H, user, "skippy"_n, s2a("1000.0000 EOS"));
+t.as(user).act<depositspend::actions::buydog>(user, "skippy"_n, s2a("1000.0000 EOS"));
 ```
 
 Let's fix it:
 
 ```c++
-t.as(user).act<depositspend::actions::buydog>(H, user, "skippy"_n, s2a("1000.0001 EOS"));
+t.as(user).act<depositspend::actions::buydog>(user, "skippy"_n, s2a("1000.0001 EOS"));
 ```
 
 Alice is now overdrawn:
