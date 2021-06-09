@@ -103,6 +103,26 @@ To start a debug session:
 * The Continue, Step Over, Step Into, Step Out, Restart, and Stop commands are available. You can also add, remove, and toggle breakpoints.
 * The Variables and Watch displays are non-functional. The Call Stack is available.
 
+## Debugging using gdb
+
+To start a debug session on the command line:
+
+```
+cd build
+gdb -q --args cltester -v -s depositspend.wasm depositspend-debug.wasm test-depositspend.wasm
+```
+
+Ignore `No debugging symbols found in cltester`; it will load debugging symbols for the wasm files.
+
+The following gdb commands set options gdb needs to function, sets a breakpoint, and runs up to that breakpoint:
+
+```
+handle SIG34 noprint
+set breakpoint pending on
+b depositspend_contract::withdraw
+run
+```
+
 ## Ubuntu 20.04
 
 ```sh
