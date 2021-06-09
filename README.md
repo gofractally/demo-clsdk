@@ -89,6 +89,20 @@ pending console output: Example print for debugging. alice wants to buy a dog na
 tester wasm asserted: transaction failed with status hard_fail
 ```
 
+## Debugging contracts using vscode
+
+This repo includes vscode settings ([.vscode](.vscode) folder) which enable debugging. This requires [ms-vscode.cpptools](https://marketplace.visualstudio.com/items?itemName=ms-vscode.cpptools). Note: `ms-vscode.cmake-tools` has compatability issues; I'd avoid it for now.
+
+To start a debug session:
+* Follow the build instructions above. [.vscode/launch.json](.vscode/launch.json) expects that you built in the `build` directory.
+* Open the repo root folder in vscode
+* Set breakpoints in [depositspend.cpp](depositspend.cpp) and [test-depositspend.cpp](test-depositspend.cpp)
+* Click the Debug icon on the left side
+* Click `(gdb) Launch cltester`
+* It should stop on the first breakpoint it hits.
+* The Continue, Step Over, Step Into, Step Out, Restart, and Stop commands are available. You can also add, remove, and toggle breakpoints.
+* The Variables and Watch displays are non-functional. The Call Stack is available.
+
 ## Ubuntu 20.04
 
 ```sh
@@ -97,6 +111,7 @@ sudo apt-get install -yq    \
     binaryen                \
     build-essential         \
     cmake                   \
+    gdb                     \
     git                     \
     libboost-all-dev        \
     libcurl4-openssl-dev    \
