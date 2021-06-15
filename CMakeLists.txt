@@ -58,8 +58,9 @@ add_test(
     COMMAND cltester -v test-depositspend.wasm -s
 )
 
-# Create a symlink to help vscode find cltester
-execute_process(COMMAND ln -sf ${clsdk_DIR}/bin/cltester ${CMAKE_CURRENT_BINARY_DIR}/cltester)
+# These symlinks help keep absolute paths outside of the files in .vscode/
+execute_process(COMMAND ln -sf ${clsdk_DIR} ${CMAKE_CURRENT_BINARY_DIR}/clsdk)
+execute_process(COMMAND ln -sf ${WASI_SDK_PREFIX} ${CMAKE_CURRENT_BINARY_DIR}/wasi-sdk)
 
 # Generate compile_commands.json during build to enable
 # symbol lookup in some editors

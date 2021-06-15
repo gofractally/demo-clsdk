@@ -8,18 +8,25 @@
             "name": "(gdb) Launch cltester",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build/cltester",
+            "program": "${workspaceFolder}/build/clsdk/bin/cltester",
             "args": [
                 "-v",
                 "-s",
                 "depositspend.wasm",
                 "depositspend-debug.wasm",
+                "-s",
+                "clsdk/contracts/token.wasm",
+                "clsdk/contracts/token-debug.wasm",
                 "test-depositspend.wasm"
             ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}/build",
             "environment": [],
             "externalConsole": false,
+            // Q: Why don't we use "sourceFileMap" here?
+            // A: It appears to work at first, but then things fall apart when
+            //    you set breakpoints in some of the mapped files.
+            //    "set substitute-path" (below) works better.
             "MIMode": "gdb",
             "setupCommands": [
                 {
@@ -30,6 +37,16 @@
                 {
                     "description": "Ignore timer signal",
                     "text": "handle SIG34 noprint",
+                    "ignoreFailures": false
+                },
+                {
+                    "description": "Map sources",
+                    "text": "set substitute-path clsdk-wasi-sdk: ${workspaceFolder}/build/wasi-sdk",
+                    "ignoreFailures": false
+                },
+                {
+                    "description": "Map sources",
+                    "text": "set substitute-path clsdk: ${workspaceFolder}/build/clsdk",
                     "ignoreFailures": false
                 }
             ]

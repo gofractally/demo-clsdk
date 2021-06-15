@@ -119,6 +119,8 @@ The following gdb commands set options gdb needs to function, sets a breakpoint,
 ```
 handle SIG34 noprint
 set breakpoint pending on
+set substitute-path clsdk-wasi-sdk: wasi-sdk
+set substitute-path clsdk: clsdk
 b depositspend_contract::withdraw
 run
 ```
