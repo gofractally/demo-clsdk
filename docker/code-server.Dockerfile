@@ -20,9 +20,6 @@ RUN cd /opt \
     && rm wasi-sdk-12.0-linux.tar.gz
 ENV WASI_SDK_PREFIX=/opt/wasi-sdk-12.0
 
-# TODO: automate fetching clsdk (waiting for the next tagged release)
-COPY image/clsdk /root/work/clsdk
-
 RUN curl -fLO https://github.com/cdr/code-server/releases/download/v3.10.2/code-server_3.10.2_amd64.deb \
     && dpkg -i code-server_3.10.2_amd64.deb                                                             \
     && rm code-server_3.10.2_amd64.deb
@@ -34,6 +31,12 @@ RUN curl -fLO https://github.com/microsoft/vscode-cpptools/releases/download/1.4
        /root/.local/share/code-server/extensions/ms-vscode.cpptools-1.4.1                               \
  && rm cpptools-linux.vsix
 
+RUN cd /opt \
+    && curl -fLO https://github.com/eoscommunity/Eden/releases/download/sdk-v0.1.0-alpha/clsdk-ubuntu-20-04.tar.gz \
+    && tar xf clsdk-ubuntu-20-04.tar.gz \
+    && rm clsdk-ubuntu-20-04.tar.gz
+ENV PATH=$PATH:/opt/clsdk/bin
+
 COPY docker/.local /root/.local
 
 RUN mkdir -p /root/work/demo-clsdk
@@ -42,7 +45,6 @@ RUN cd /root/work/demo-clsdk && git checkout .
 COPY docker/replacement-c_cpp_properties.json   /root/work/demo-clsdk/.vscode/c_cpp_properties.json
 COPY docker/replacement-README.md               /root/work/demo-clsdk/README.md
 
-ENV PATH=$PATH:/root/work/clsdk/bin
 WORKDIR /root/work/demo-clsdk
 
 RUN mkdir build                     \
