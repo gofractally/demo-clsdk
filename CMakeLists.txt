@@ -22,6 +22,17 @@ find_package(clsdk REQUIRED)
 add_executable(depositspend depositspend.cpp)
 target_link_libraries(depositspend eosio-contract-simple-malloc)
 
+# Builds depositspend-debug.wasm
+#
+# This is like depositspend.wasm, but includes debugging information.
+# Debug contracts can't normally be installed on chains using `set code`.
+# Instead, cltester loads them using its `-s/--subst` option.
+#
+# Create a debugging contract by linking to either
+# eosio-contract-simple-malloc-debug or eosio-contract-full-malloc-debug.
+add_executable(depositspend-debug depositspend.cpp)
+target_link_libraries(depositspend-debug eosio-contract-simple-malloc-debug)
+
 # Generate depositspend.abi
 # This is a 2-step process:
 #   * Build depositspend.abi.wasm. This must link to eosio-contract-abigen.
@@ -33,9 +44,10 @@ add_custom_command(TARGET depositspend-abigen POST_BUILD
 )
 
 # Builds test-depositspend.wasm
-# Tests must link to cltestlib
+# Tests must link to either cltestlib (runs faster) or cltestlib-debug
+# (shows stack traces on failure).
 add_executable(test-depositspend test-depositspend.cpp)
-target_link_libraries(test-depositspend cltestlib)
+target_link_libraries(test-depositspend cltestlib-debug)
 
 # ctest rule which runs test-depositspend.wasm. The -v and -s
 # options provide detailed logging. ctest hides this detail;
@@ -45,6 +57,10 @@ add_test(
     NAME deposit-and-spend
     COMMAND cltester -v test-depositspend.wasm -s
 )
+
+# These symlinks help keep absolute paths outside of the files in .vscode/
+execute_process(COMMAND ln -sf ${clsdk_DIR} ${CMAKE_CURRENT_BINARY_DIR}/clsdk)
+execute_process(COMMAND ln -sf ${WASI_SDK_PREFIX} ${CMAKE_CURRENT_BINARY_DIR}/wasi-sdk)
 
 # Generate compile_commands.json during build to enable
 # symbol lookup in some editors
