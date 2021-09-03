@@ -153,7 +153,7 @@ wget https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-12/wasi-
 tar xf wasi-sdk-12.0-linux.tar.gz
 
 cd ~/work
-wget https://github.com/eoscommunity/Eden/releases/download/sdk-v0.1.0-alpha/clsdk-ubuntu-20-04.tar.gz
+wget https://github.com/eoscommunity/Eden/releases/download/sdk-v0.2.0-alpha/clsdk-ubuntu-20-04.tar.gz
 tar xf clsdk-ubuntu-20-04.tar.gz
 ```
 
