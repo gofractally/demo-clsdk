@@ -1,0 +1,16 @@
+{
+  "name": "webapp",
+  "version": "0.0.1",
+  "main": "index.js",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "build": "webpack --mode development",
+    "start": "simple-server"
+  },
+  "devDependencies": {
+    "eosjs": "^22.1.0",
+    "webpack": "4",
+    "webpack-cli": "^4.8.0"
+  }
+}
