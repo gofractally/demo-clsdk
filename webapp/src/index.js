@@ -15,11 +15,22 @@ global.submitSessionPair = async () => {
     try {
         const rpc = new JsonRpc(document.getElementById("rpc").value);
         const signatureProvider = new JsSignatureProvider([
-            document.getElementById("pk").value
+            document.getElementById("pk").value,
+
+            // This is the well-known private key for thepayer@freebie
+            '5KQwrPbwdL6PhXujxW37FSSQZ1JiwsST4cqQzDeyXtP79zkvFD3'
         ]);
         const api = new Api({ rpc, signatureProvider });
         const trx = {
             actions: [{
+                account: "freetalk",
+                name: "acceptcharge",
+                authorization: [{
+                    actor: 'thepayer',
+                    permission: 'freebie',
+                }],
+                data: {},
+            }, {
                 account: "freetalk",
                 name: "registerkey",
                 authorization: [{

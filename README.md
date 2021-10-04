@@ -49,7 +49,9 @@ The demo should now be running on http://localhost:3000
 
 * "Generate Session Key Pair" generates a new public and private key
 * "Submit Session Key Pair" submits the new session key to the chain
-  * This uses the `freetalk.registerkey` action.
+  * This uses the  `freetalk.acceptcharge` and `freetalk.registerkey` actions.
+  * `thepayer@freebie` authorizes `freetalk.acceptcharge` using a well-publicized private key. This pays for the transaction.
+  * The user authorizes `freetalk.acceptcharge`
   * It doesn't modify the user's permissions.
 * "Post using Session Key"
   * This uses the `freetalk.acceptcharge` and `freetalk.createpost` actions.

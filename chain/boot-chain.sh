@@ -12,7 +12,7 @@ mkdir ../chain/wallet
 keosd --wallet-dir `pwd`/../chain/wallet &
 cleos wallet create -f ../chain/wallet-password
 
-# Well-known development password, ideal for contract-pays advertised key
+# Well-known development key, ideal for contract-pays advertised key
 # Also used for block-production
 cleos wallet import --private-key 5KQwrPbwdL6PhXujxW37FSSQZ1JiwsST4cqQzDeyXtP79zkvFD3 # EOS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV
 
@@ -87,7 +87,7 @@ cleos set abi freetalk freetalk.abi
 #       * Can only authorize `freetalk.acceptcharge`
 #       * Restricted from using `updateauth`, `deleteauth`, `linkauth`, and `unlinkauth`
 #   * --buy-ram-bytes is set low enough where thepayer ends up with 0 bytes available after these commands.
-#     This is so thepayer@active can't waste RAM creating deferred transactions.
+#     This is so thepayer@freebie can't waste RAM creating deferred transactions.
 cleos system newaccount eosio thepayer EOS5CNJPSYahh1bjyQ72oLqipNAtd5Y9bJL34kfZPEoHEHDZRkLtm --buy-ram-bytes 2343 --stake-net "1000.0000 EOS" --stake-cpu "1000.0000 EOS"
 cleos push action eosio limitauthchg '["thepayer", ["owner","active"], []]' -p thepayer@active
 cleos push action eosio updateauth '["thepayer", "freebie", "active", {threshold : 1, keys : [{key : "EOS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV", weight : 1}], accounts : [], waits : []}, "active"]' -p thepayer@active
