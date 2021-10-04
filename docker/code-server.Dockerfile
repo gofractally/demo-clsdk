@@ -10,6 +10,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
         gdb                     \
         git                     \
         libgmp10                \
+        libusb-1.0-0            \
         unzip                   \
     && apt-get clean -yq \
     && rm -rf /var/lib/apt/lists/*
@@ -24,6 +25,13 @@ RUN curl -fLO https://github.com/cdr/code-server/releases/download/v3.10.2/code-
     && dpkg -i code-server_3.10.2_amd64.deb                                                             \
     && rm code-server_3.10.2_amd64.deb
 
+ENV PATH=/opt/node-v14.16.0-linux-x64/bin:$PATH
+RUN cd /opt \
+    && curl -fLO https://nodejs.org/dist/v14.16.0/node-v14.16.0-linux-x64.tar.xz \
+    && tar xf node-v14.16.0-linux-x64.tar.xz \
+    && npm i -g yarn \
+    && rm -rf node-v14.16.0-linux-x64.tar.xz
+
 RUN curl -fLO https://github.com/microsoft/vscode-cpptools/releases/download/1.4.1/cpptools-linux.vsix  \
  && mkdir -p /root/.local/share/code-server/extensions/ms-vscode.cpptools-1.4.1/                        \
  && unzip cpptools-linux.vsix -d /root/.local/share/code-server/extensions/ms-vscode.cpptools-1.4.1     \
@@ -32,7 +40,7 @@ RUN curl -fLO https://github.com/microsoft/vscode-cpptools/releases/download/1.4
  && rm cpptools-linux.vsix
 
 RUN cd /opt \
-    && curl -fLO https://github.com/eoscommunity/Eden/releases/download/sdk-v0.1.0-alpha/clsdk-ubuntu-20-04.tar.gz \
+    && curl -fLO https://github.com/eoscommunity/Eden/releases/download/sdk-v0.2.0-alpha/clsdk-ubuntu-20-04.tar.gz \
     && tar xf clsdk-ubuntu-20-04.tar.gz \
     && rm clsdk-ubuntu-20-04.tar.gz
 ENV PATH=$PATH:/opt/clsdk/bin
@@ -50,7 +58,12 @@ WORKDIR /root/work/demo-clsdk
 RUN mkdir build                     \
     && cd build                     \
     && cmake `clsdk-cmake-args` ..  \
-    && make -j
+    && make -j                      \
+    && ../chain/boot-chain.sh
 
-EXPOSE 8080
+RUN cd webapp       \
+    && yarn         \
+    && yarn build
+
+EXPOSE 8080 8888 3000
 CMD code-server --auth none --bind-addr 0.0.0.0:8080 .

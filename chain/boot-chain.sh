@@ -6,7 +6,7 @@ set -ex
 CONTRACTS=$(realpath -e `dirname \`which clsdk-cmake-args\``/../contracts)
 
 # Create a wallet (job 1)
-cleos wallet stop
+cleos wallet stop || true
 rm -rf ../chain/wallet
 mkdir ../chain/wallet
 keosd --wallet-dir `pwd`/../chain/wallet &
@@ -107,4 +107,4 @@ rm -rf ../chain/data
 mkdir -p ../chain/data/blocks
 cp temp-chain/blocks/blocks.log ../chain/data/blocks
 
-# cleos wallet stop
+cleos wallet stop

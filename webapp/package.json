@@ -10,6 +10,7 @@
   },
   "devDependencies": {
     "eosjs": "^22.1.0",
+    "simple-server": "^1.1.1",
     "webpack": "4",
     "webpack-cli": "^4.8.0"
   }
