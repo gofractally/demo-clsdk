@@ -53,14 +53,16 @@ namespace freetalk
          });
       else
          table.modify(record, eosio::same_payer, [&](auto& a) { a.key = key; });
+
+      // Verify active eden member
+      eden_member_table members(eden_account, 0);
+      auto it = members.find(user.value);
+      eosio::check(it != members.end(), "member not found");
+      eosio::check(it->status == 1, "member not active");
    }
 
    // Action: create a new post. Verifies the signature instead of doing typical auth checking.
    //         Uses the sequence number to prevent replay attacks.
-   //
-   // Note: the contract pays for the RAM, but doesn't have any protections. Ideally,
-   //       it would charge the user a (possibly refundable) fee or do something else
-   //       to prevent abuse.
    void freetalk_contract::createpost(const eosio::signature& signature, eosio::ignore<post>)
    {
       // Since we used eosio::ignore, the post lives in serialized form inside the datastream.
@@ -74,6 +76,7 @@ namespace freetalk
       freetalk::post post;
       ds >> post;
       eosio::check(!ds.remaining(), "detected extra action data after post");
+      eosio::check(post.message.size() <= 256, "post is too long");
 
       // Verify the recovered key
       userkey_table table(get_self(), default_scope);
@@ -84,22 +87,29 @@ namespace freetalk
                                  public_key_to_string(recovered));
 
       // Protection against replay attacks
-      if (post.sequence != record->next_sequence)
-         eosio::check(false, "Expected sequence " + std::to_string(record->next_sequence) +
-                                 " but got sequence " + std::to_string(post.sequence));
-      table.modify(record, eosio::same_payer, [&](auto& rec) {  //
-         rec.next_sequence = rec.next_sequence + 1;
+      table.modify(record, eosio::same_payer, [&](auto& rec) {
+         if (rec.sequences.begin() != rec.sequences.end())
+         {
+            if (post.sequence < *rec.sequences.begin())
+               eosio::check(false, "received duplicate sequence " + std::to_string(post.sequence));
+            else if (post.sequence > rec.sequences.end()[-1].value + 10)
+               eosio::check(false, "sequence " + std::to_string(post.sequence) + " skips too many");
+         }
+         auto it = std::lower_bound(rec.sequences.begin(), rec.sequences.end(), post.sequence);
+         if (it != rec.sequences.end() && *it == post.sequence)
+            eosio::check(false, "received duplicate sequence " + std::to_string(post.sequence));
+         rec.sequences.insert(it, post.sequence);
+         if (rec.sequences.size() > 20)
+            rec.sequences.erase(rec.sequences.begin());
       });
 
-      // Store the post
-      post_table ptable(get_self(), default_scope);
-      ptable.emplace(get_self(), [&](auto& rec) {
-         rec.id = ptable.available_primary_key();
-         rec.user = post.user;
-         rec.sequence = post.sequence;
-         rec.message = post.message;
-      });
-   }
+      // Verify active eden member. Also verify name.
+      eden_member_table members(eden_account, 0);
+      auto it = members.find(post.user.value);
+      eosio::check(it != members.end(), "member not found");
+      eosio::check(it->status == 1, "member not active");
+      eosio::check(post.name == it->name, "name does not match");
+   }  // namespace freetalk
 }  // namespace freetalk
 
 // Final part of the dispatcher
@@ -108,5 +118,4 @@ EOSIO_ACTION_DISPATCHER(freetalk::actions)
 // Things to populate the ABI with
 EOSIO_ABIGEN(  //
     actions(freetalk::actions),
-    table("userkey"_n, freetalk::userkey),
-    table("post"_n, freetalk::stored_post))
+    table("userkey"_n, freetalk::userkey))

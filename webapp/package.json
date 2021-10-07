@@ -5,13 +5,23 @@
   "license": "MIT",
   "private": true,
   "scripts": {
-    "build": "webpack --mode development",
+    "build": "webpack && cp index.html dist",
     "start": "simple-server"
   },
   "devDependencies": {
+    "@types/react": "^17.0.27",
+    "@types/react-dom": "^17.0.9",
+    "anchor-link": "^3.3.4",
+    "anchor-link-browser-transport": "^3.2.5",
+    "buffer": "^6.0.3",
     "eosjs": "^22.1.0",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "react-toast-notifications": "^2.5.1",
     "simple-server": "^1.1.1",
-    "webpack": "4",
+    "ts-loader": "^9.2.6",
+    "typescript": "^4.4.3",
+    "webpack": "^5.57.1",
     "webpack-cli": "^4.8.0"
   }
 }

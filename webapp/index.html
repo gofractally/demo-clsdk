@@ -1,93 +1,11 @@
 <html>
 
+<head>
+    <title>Server-Pays and Contract-Auth Demo</title>
+</head>
+
 <body>
-    <h2>Chain</h2>
-    <table>
-        <tbody>
-            <tr>
-                <td>RPC</td>
-                <td><input id="rpc" size="80" value="http://127.0.0.1:8888"></td>
-            </tr>
-        </tbody>
-    </table>
-
-    <h2>User</h2>
-    <table>
-        <tbody>
-            <tr>
-                <td>Account</td>
-                <td><input id="account" size="80" value="bob"></td>
-            </tr>
-            <tr>
-                <td>Private Key</td>
-                <td><input id="pk" size="80" value="5Khijcg4ALiGh5fi6z6rjCfD9iDrSeBK5zxqwdXWgjxVCBsfNUy"></td>
-            </tr>
-        </tbody>
-    </table>
-
-    <br><b>Some examples to fill in above:</b>
-    <table>
-        <tbody>
-            <tr>
-                <td>bob</td>
-                <td>5Khijcg4ALiGh5fi6z6rjCfD9iDrSeBK5zxqwdXWgjxVCBsfNUy</td>
-            </tr>
-            <tr>
-                <td>sue</td>
-                <td>5J9SitMtJTKAL1ytNzsFhFN8c4J1QED67w7Nfe6fD3VB89XSLEN</td>
-            </tr>
-            <tr>
-                <td>joe</td>
-                <td>5K9aTPoqoyGi7ZJ5W1pwmxMfEcpNF37dpzkDjEXhEv5JyVXBqAH</td>
-            </tr>
-            <tr>
-                <td>alice</td>
-                <td>5JF6YU9NqV6r2HfwsmXvMXmBcEX57uBGj9qekBJWcBEux1EQCdo</td>
-            </tr>
-        </tbody>
-    </table>
-
-    <h2>Session</h2>
-    <button onclick="generateSessionPair()">Generate Session Key Pair</button>
-    <br>
-    <table>
-        <tbody>
-            <tr>
-                <td>Session Public Key</td>
-                <td><input id="session_public" size="80"></td>
-            </tr>
-            <tr>
-                <td>Session Private Key</td>
-                <td><input id="session_private" size="80"></td>
-            </tr>
-        </tbody>
-    </table>
-    <br>
-    <button onclick="submitSessionPair()">Submit Session Key Pair</button>
-    <pre style="border: 2px solid; height: 140px; overflow: scroll"><code id="register_result"></code></pre>
-
-    <h2>Posting</h2>
-    <table>
-        <tbody>
-            <tr>
-                <td>Message</td>
-                <td><input id="message" size="80" value="say something..."></td>
-            </tr>
-            <tr>
-                <td>Sequence</td>
-                <td><input id="sequence" size="10" type="number" value="0"></td>
-            </tr>
-        </tbody>
-    </table>
-    <button onclick="post()">Post using Session Key</button>
-    <pre style="border: 2px solid; height: 140px; overflow: scroll"><code id="post_result"></code></pre>
-
-    <h2>Get Posts</h2>
-    <button onclick="getPosts()">Get Posts</button>
-    <br>
-    <table style="border: 2px solid;"><tbody id="posts"></tbody></table>
-
-    <script src="dist/main.js"></script>
+    <script src="main.js"></script>
 </body>
 
 </html>

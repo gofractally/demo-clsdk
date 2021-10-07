@@ -19,38 +19,43 @@ namespace freetalk
    // Default scope for tables
    inline constexpr uint64_t default_scope = 0;
 
+   // Check eden members from this contract
+   inline constexpr auto eden_account = "test2.edev"_n;
+
+   // Eden member table
+   struct eden_member
+   {
+      eosio::varuint32 version;
+      eosio::name account;
+      std::string name;
+      uint8_t status;
+      uint64_t nft_template_id;
+
+      uint64_t primary_key() const { return account.value; }
+   };
+   EOSIO_REFLECT(eden_member, version, account, name, status, nft_template_id)
+   using eden_member_table = eosio::multi_index<"member"_n, eden_member>;
+
    // This table keeps track of each user's public key and their next sequence number.
    struct userkey
    {
       eosio::name user;
       eosio::public_key key;
-      uint32_t next_sequence = 0;
+      std::vector<eosio::varuint32> sequences;
 
       uint64_t primary_key() const { return user.value; }
    };
-   EOSIO_REFLECT(userkey, user, key, next_sequence)
+   EOSIO_REFLECT(userkey, user, key, sequences)
    typedef eosio::multi_index<"userkey"_n, userkey> userkey_table;
 
    struct post
    {
       eosio::name user;
       uint32_t sequence;
+      std::string name;
       std::string message;
    };
-   EOSIO_REFLECT(post, user, sequence, message)
-
-   // This table holds the posts
-   struct stored_post
-   {
-      uint64_t id;
-      eosio::name user;
-      uint32_t sequence;
-      std::string message;
-
-      uint64_t primary_key() const { return id; }
-   };
-   EOSIO_REFLECT(stored_post, id, user, sequence, message)
-   typedef eosio::multi_index<"post"_n, stored_post> post_table;
+   EOSIO_REFLECT(post, user, sequence, name, message)
 
    // The contract
    struct freetalk_contract : public eosio::contract
