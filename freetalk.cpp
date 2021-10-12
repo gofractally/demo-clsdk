@@ -4,38 +4,6 @@
 
 namespace freetalk
 {
-   // This version of eosio::get_action doesn't abort when index is out of range.
-   // It also doesn't play memory games.
-   std::optional<eosio::action> safer_get_action(uint32_t type, uint32_t index)
-   {
-      auto size = eosio::internal_use_do_not_use::get_action(type, index, nullptr, 0);
-      if (size < 0)
-         return std::nullopt;
-      std::vector<char> raw(size);
-      auto size2 = eosio::internal_use_do_not_use::get_action(type, index, raw.data(), size);
-      eosio::check(size2 == size, "get_action failed");
-      return eosio::unpack<eosio::action>(raw.data(), size);
-   }
-
-   // Action: examine the transaction to see if we're ok accepting the charges for all of its actions
-   void freetalk_contract::acceptcharge()
-   {
-      // type 0: context-free action
-      // type 1: normal action
-      for (uint32_t type = 0; type < 2; ++type)
-      {
-         for (uint32_t index = 0;; ++index)
-         {
-            auto action = safer_get_action(type, index);
-            if (!action)
-               break;
-            // Simple rule: only allow actions on this contract
-            eosio::check(action->account == get_self(),
-                         "This transaction has something I won't pay for");
-         }
-      }
-   }
-
    // Action: register key with user
    //
    // Note: the contract pays for the RAM, but doesn't have any protections. Ideally,

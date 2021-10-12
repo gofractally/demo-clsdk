@@ -1,5 +1,6 @@
 import winston from "winston";
 import morgan from "morgan";
+import { Express } from "express";
 
 const env = process.env.NODE_ENV || "development";
 
@@ -32,10 +33,7 @@ const logger = winston.createLogger({
 
 export default logger;
 
-morgan.token(
-    "message",
-    (req, res) => res.locals.errorMessage || ""
-);
+morgan.token("message", (req, res) => (res as any).locals.errorMessage || "");
 const getIpFormat = () => (env === "production" ? ":remote-addr - " : "");
 
 const successResponseFormat = `${getIpFormat()}:method :url :status - :response-time ms`;
@@ -50,7 +48,7 @@ export const errorHandler = morgan(errorResponseFormat, {
     stream: { write: (message) => logger.error(message.trim()) },
 });
 
-export const setupExpressLogger = (app) => {
+export const setupExpressLogger = (app: Express) => {
     app.use(successHandler);
     app.use(errorHandler);
 };

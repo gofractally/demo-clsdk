@@ -83,7 +83,7 @@ async function login(
             members.rows[0][1].account != session.auth.actor
         )
             throw new Error(
-                "Account not found in ${config.edenContract} member table"
+                `Account not found in ${config.edenContract} member table`
             );
 
         postSession = {

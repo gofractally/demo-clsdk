@@ -63,9 +63,6 @@ namespace freetalk
       // Use the base class constructors
       using eosio::contract::contract;
 
-      // Action: check transaction body to see if it's something we're willing to pay for
-      void acceptcharge();
-
       // Action: register key with user
       void registerkey(eosio::name user, const eosio::public_key& key);
 
@@ -84,7 +81,6 @@ namespace freetalk
    //   will leave the ricardian contracts blank.
    EOSIO_ACTIONS(freetalk_contract,
                  default_contract_account,
-                 action(acceptcharge, ricardian_contract(acceptcharge_ricardian)),
                  action(registerkey, user, key, ricardian_contract(registerkey_ricardian)),
                  action(createpost, signature, post, ricardian_contract(createpost_ricardian)))
 }  // namespace freetalk
