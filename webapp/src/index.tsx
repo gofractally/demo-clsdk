@@ -347,21 +347,56 @@ function usePosts() {
 } // usePosts
 
 function User(props: { account: string }) {
-    const name = useQuery(`
+    return <></>;
+}
+
+function DisplayPost(props: { index: number; post: Post }) {
+    const profile = useQuery(`
     {
       members(
-        ge: ${JSON.stringify(props.account)},
-        le: ${JSON.stringify(props.account)}) {
+        ge: ${JSON.stringify(props.post.user)},
+        le: ${JSON.stringify(props.post.user)}) {
         edges {
           node {
             profile {
               name
+              img
             }
           }
         }
       }
-    }`).data?.members.edges[0]?.node.profile.name;
-    return <>{name ? name : props.account}</>;
+    }`).data?.members.edges[0]?.node.profile;
+    return (
+        <div key={props.index} style={{ margin: 10, background: "cyan" }}>
+            <table>
+                <tbody>
+                    <tr>
+                        <td rowSpan={3} style={{ width: 40, height: 40 }}>
+                            <img
+                                style={{
+                                    width: 40,
+                                    height: 40,
+                                    borderRadius: "50%",
+                                }}
+                                src={
+                                    profile
+                                        ? config.ipfsBaseUrl + "/" + profile.img
+                                        : ""
+                                }
+                            ></img>
+                        </td>
+                        <td>{props.index}</td>
+                    </tr>
+                    <tr>
+                        <td>{profile ? profile.name : props.post.user}</td>
+                    </tr>
+                    <tr>
+                        <td>{props.post.message}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    );
 }
 
 function Posts() {
@@ -380,30 +415,11 @@ function Posts() {
             }}
         >
             {state.posts
-                .map((item, _) => (
-                    <div
-                        key={item.index}
-                        style={{ margin: 10, background: "cyan" }}
-                    >
-                        <table>
-                            <tbody>
-                                <tr>
-                                    <td>Number</td>
-                                    <td>{item.index}</td>
-                                </tr>
-                                <tr>
-                                    <td>User</td>
-                                    <td>
-                                        <User account={item.post.user}></User>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>Message</td>
-                                    <td>{item.post.message}</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
+                .map((item) => (
+                    <DisplayPost
+                        index={item.index}
+                        post={item.post}
+                    ></DisplayPost>
                 ))
                 .reverse()}
 

@@ -25,6 +25,7 @@ export const publicConfig = {
     talkContract: process.env.PUBLIC_TALK_CONTRACT,
     edenContract: process.env.PUBLIC_EDEN_CONTRACT,
     subchain: process.env.PUBLIC_SUBCHAIN,
+    ipfsBaseUrl: process.env.PUBLIC_IPFS_BASE_URL,
 };
 console.info(publicConfig);
 
