@@ -20,7 +20,7 @@ namespace freetalk
    inline constexpr uint64_t default_scope = 0;
 
    // Check eden members from this contract
-   inline constexpr auto eden_account = "test2.edev"_n;
+   inline constexpr auto eden_account = "genesis.eden"_n;
 
    // Eden member table
    struct eden_member
