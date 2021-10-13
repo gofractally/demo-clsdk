@@ -22,11 +22,10 @@ namespace freetalk
       else
          table.modify(record, eosio::same_payer, [&](auto& a) { a.key = key; });
 
-      // Verify active eden member
+      // Verify eden member
       eden_member_table members(eden_account, 0);
       auto it = members.find(user.value);
       eosio::check(it != members.end(), "member not found");
-      eosio::check(it->status == 1, "member not active");
    }
 
    // Action: create a new post. Verifies the signature instead of doing typical auth checking.
@@ -71,12 +70,10 @@ namespace freetalk
             rec.sequences.erase(rec.sequences.begin());
       });
 
-      // Verify active eden member. Also verify name.
+      // Verify eden member.
       eden_member_table members(eden_account, 0);
       auto it = members.find(post.user.value);
       eosio::check(it != members.end(), "member not found");
-      eosio::check(it->status == 1, "member not active");
-      eosio::check(post.name == it->name, "name does not match");
    }  // namespace freetalk
 }  // namespace freetalk
 

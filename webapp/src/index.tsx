@@ -16,15 +16,15 @@ import { ToastProvider, useToasts, AddToast } from "react-toast-notifications";
 import useInfiniteScroll from "react-infinite-scroll-hook";
 import { Post } from "../../server/src/posts";
 import { ClientMessage, ServerMessage } from "../../server/src/posts-server";
+import {
+    EdenChainContext,
+    useCreateEdenChain,
+    useQuery,
+} from "@edenos/eden-subchain-client/dist/ReactSubchain";
 
 global.Buffer = require("buffer/").Buffer;
 
 let config: any;
-(async () => {
-    const res = await fetch("config.json");
-    config = await res.json();
-    console.log(JSON.stringify(config, null, 4));
-})();
 
 type StateHook<T> = [T, (value: T) => void];
 
@@ -157,7 +157,6 @@ async function post(
         const post = {
             user: postSession.account.toString(),
             sequence: postSession.nextSequence++,
-            name: postSession.name,
             message: message,
         };
 
@@ -165,7 +164,6 @@ async function post(
         const buf = new SerialBuffer();
         buf.pushName(post.user);
         buf.pushUint32(post.sequence);
-        buf.pushString(post.name.toString());
         buf.pushString(post.message);
 
         // Sign the post using the session key
@@ -348,6 +346,24 @@ function usePosts() {
     };
 } // usePosts
 
+function User(props: { account: string }) {
+    const name = useQuery(`
+    {
+      members(
+        ge: ${JSON.stringify(props.account)},
+        le: ${JSON.stringify(props.account)}) {
+        edges {
+          node {
+            profile {
+              name
+            }
+          }
+        }
+      }
+    }`).data?.members.edges[0]?.node.profile.name;
+    return <>{name ? name : props.account}</>;
+}
+
 function Posts() {
     const state = usePosts();
     const [sentryRef, { rootRef }] = useInfiniteScroll({
@@ -377,7 +393,9 @@ function Posts() {
                                 </tr>
                                 <tr>
                                     <td>User</td>
-                                    <td>{item.post.user}</td>
+                                    <td>
+                                        <User account={item.post.user}></User>
+                                    </td>
                                 </tr>
                                 <tr>
                                     <td>Message</td>
@@ -415,24 +433,37 @@ function Posts() {
 
 function Page() {
     const loginHook = React.useState<PostSession>();
+    const subchain = useCreateEdenChain({
+        fetch,
+        wasmUrl: `https://${config.subchain}/eden-micro-chain.wasm`,
+        stateUrl: `https://${config.subchain}/state`,
+        blocksUrl: `wss://${config.subchain}/eden-microchain`,
+    });
 
     return (
         <ToastProvider>
             <PostSessionContext.Provider value={loginHook}>
-                <div
-                    style={{
-                        display: "flex",
-                        flexDirection: "column",
-                        height: "100%",
-                    }}
-                >
-                    <Login />
-                    <Poster />
-                    <Posts />
-                </div>
+                <EdenChainContext.Provider value={subchain}>
+                    <div
+                        style={{
+                            display: "flex",
+                            flexDirection: "column",
+                            height: "100%",
+                        }}
+                    >
+                        <Login />
+                        <Poster />
+                        <Posts />
+                    </div>
+                </EdenChainContext.Provider>
             </PostSessionContext.Provider>
         </ToastProvider>
     );
 }
 
-ReactDOM.render(<Page />, document.body);
+(async () => {
+    const res = await fetch("config.json");
+    config = await res.json();
+    console.log(JSON.stringify(config, null, 4));
+    ReactDOM.render(<Page />, document.body);
+})();

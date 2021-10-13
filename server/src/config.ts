@@ -21,10 +21,10 @@ console.info({ ...serverConfig, serverPaysPrivateKey: "<hidden>" });
 
 export const publicConfig = {
     chainId: process.env.PUBLIC_CHAIN_ID,
-    chainRpcUrl:
-        process.env.PUBLIC_CHAIN_RPC_URL || "https://testnet.waxsweden.org",
-    talkContract: process.env.PUBLIC_TALK_CONTRACT || "talk.edev",
-    edenContract: process.env.PUBLIC_EDEN_CONTRACT || "test2.edev",
+    chainRpcUrl: process.env.PUBLIC_CHAIN_RPC_URL,
+    talkContract: process.env.PUBLIC_TALK_CONTRACT,
+    edenContract: process.env.PUBLIC_EDEN_CONTRACT,
+    subchain: process.env.PUBLIC_SUBCHAIN,
 };
 console.info(publicConfig);
 

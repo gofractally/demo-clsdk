@@ -27,13 +27,9 @@ namespace freetalk
    {
       eosio::varuint32 version;
       eosio::name account;
-      std::string name;
-      uint8_t status;
-      uint64_t nft_template_id;
-
       uint64_t primary_key() const { return account.value; }
    };
-   EOSIO_REFLECT(eden_member, version, account, name, status, nft_template_id)
+   EOSIO_REFLECT(eden_member, version, account)
    using eden_member_table = eosio::multi_index<"member"_n, eden_member>;
 
    // This table keeps track of each user's public key and their next sequence number.
@@ -52,10 +48,9 @@ namespace freetalk
    {
       eosio::name user;
       uint32_t sequence;
-      std::string name;
       std::string message;
    };
-   EOSIO_REFLECT(post, user, sequence, name, message)
+   EOSIO_REFLECT(post, user, sequence, message)
 
    // The contract
    struct freetalk_contract : public eosio::contract
