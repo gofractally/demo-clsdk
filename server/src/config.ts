@@ -28,4 +28,15 @@ export const publicConfig = {
 };
 console.info(publicConfig);
 
+export const dfuseConfig = {
+    apiKey: process.env.DFUSE_API_KEY,
+    apiNetwork: process.env.DFUSE_API_NETWORK,
+    authNetwork: process.env.DFUSE_AUTH_NETWORK,
+    firstBlock: +process.env.DFUSE_FIRST_BLOCK,
+    jsonTrxFile: process.env.DFUSE_JSON_TRX_FILE,
+    interval: +process.env.DFUSE_INTERVAL,
+    connect: process.env.DFUSE_CONNECT === "true",
+};
+console.info({ ...dfuseConfig, apiKey: "<secret>" });
+
 logger.info("<== Env Configs Loaded!");

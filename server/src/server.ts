@@ -1,12 +1,16 @@
 import { serverConfig, publicConfig } from "./config.js";
+import logger, { setupExpressLogger } from "./logger.js";
+import Posts from "./posts.js";
+import DfuseReceiver from "./dfuse-receiver.js";
+import { createWSServer } from "./posts-server.js";
 import { JsSignatureProvider } from "eosjs/dist/eosjs-jssig.js";
 import { JsonRpc } from "eosjs/dist/eosjs-jsonrpc.js";
 import { Api } from "eosjs/dist/eosjs-api.js";
 import { arrayToHex } from "eosjs/dist/eosjs-serialize.js";
 import { AuthorityProviderArgs } from "eosjs/dist/eosjs-api-interfaces";
 import fetch from "node-fetch";
-import logger, { setupExpressLogger } from "./logger.js";
 import express from "express";
+import * as http from "http";
 
 const rpc = new JsonRpc(publicConfig.chainRpcUrl, { fetch });
 const signatureProvider = new JsSignatureProvider([
@@ -95,7 +99,20 @@ async function generateTapos() {
 }
 generateTapos();
 
+// Receive posts from dfuse
+const posts = new Posts();
+const dfuseReceiver = new DfuseReceiver(posts);
+(async () => {
+    try {
+        await dfuseReceiver.start();
+    } catch (e) {
+        logger.error(`starting dfuse: ${e.message}`);
+    }
+})();
+
+// Server
 const app = express();
+const server = http.createServer(app);
 
 setupExpressLogger(app);
 app.use(express.json());
@@ -159,6 +176,8 @@ app.post("/sign_post_trx", async (req, res, next) => {
     }
 });
 
-app.listen(serverConfig.port, () => {
+server.listen(serverConfig.port, () => {
     logger.info(`listening at http://localhost:${serverConfig.port}`);
 });
+
+createWSServer("/posts", server, posts);

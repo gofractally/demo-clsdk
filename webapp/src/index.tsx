@@ -1,8 +1,6 @@
 "use strict";
 
-import { JsSignatureProvider } from "eosjs/dist/eosjs-jssig";
 import { JsonRpc } from "eosjs/dist/eosjs-jsonrpc";
-import { Api } from "eosjs/dist/eosjs-api";
 import { KeyType } from "eosjs/dist/eosjs-numeric";
 import { SerialBuffer } from "eosjs/dist/eosjs-serialize";
 import {
@@ -11,10 +9,13 @@ import {
     PublicKey,
 } from "eosjs/dist/eosjs-key-conversions";
 import AnchorLinkBrowserTransport from "anchor-link-browser-transport";
-import AnchorLink, { LinkSession, Name } from "anchor-link";
+import AnchorLink, { Name } from "anchor-link";
 import * as ReactDOM from "react-dom";
 import * as React from "react";
 import { ToastProvider, useToasts, AddToast } from "react-toast-notifications";
+import useInfiniteScroll from "react-infinite-scroll-hook";
+import { Post } from "../../server/src/posts";
+import { ClientMessage, ServerMessage } from "../../server/src/posts-server";
 
 global.Buffer = require("buffer/").Buffer;
 
@@ -208,19 +209,21 @@ function Login() {
     const [postSession, setPostSession] = React.useContext(PostSessionContext);
     const { addToast } = useToasts();
     return (
-        <button onClick={(e) => login(setPostSession, addToast)}>
-            Log in using Anchor
-        </button>
+        <div>
+            <button onClick={(e) => login(setPostSession, addToast)}>
+                Log in using Anchor
+            </button>
+        </div>
     );
 }
 
-function Post() {
+function Poster() {
     const [postSession, setPostSession] = React.useContext(PostSessionContext);
     const [message, setMessage] = React.useState("");
     const { addToast } = useToasts();
     if (!postSession?.privateKey) return <></>;
     return (
-        <>
+        <div>
             <h2>Post as {postSession.name}</h2>
             <input
                 size={80}
@@ -230,7 +233,183 @@ function Post() {
             <button onClick={(e) => post(postSession, message, addToast)}>
                 Post message
             </button>
-        </>
+        </div>
+    );
+}
+
+function usePosts() {
+    // non-signalling state
+    const [state] = React.useState({
+        ws: null as WebSocket,
+        numIrreversible: 0,
+        numAvailable: 0,
+        posts: [] as { index: number; post: Post }[],
+        firstPost: 0,
+        needFork: false,
+        loading: false,
+        reconnect: true,
+    });
+    let [changedCounter, setChangedCounter] = React.useState(0);
+
+    function fork(index: number) {
+        if (state.firstPost + state.posts.length > index) {
+            state.posts.splice(index - state.firstPost);
+            setChangedCounter(++changedCounter);
+        }
+    }
+
+    function send(msg: ClientMessage) {
+        state.ws.send(JSON.stringify(msg));
+    }
+
+    function createWS() {
+        if (!state.reconnect) return;
+
+        let loc;
+        if (window.location.protocol === "https:")
+            loc = "wss://" + window.location.host + "/posts";
+        else loc = "ws://" + window.location.host + "/posts";
+        state.ws = new WebSocket(loc);
+
+        state.ws.onmessage = (e) => {
+            const data = JSON.parse(e.data) as ServerMessage;
+            if (data.numAvailable !== null) {
+                fork(data.numAvailable);
+                state.numAvailable = data.numAvailable;
+            }
+            if (data.numIrreversible !== null && !state.needFork)
+                state.numIrreversible = data.numIrreversible;
+            if (data.thisIndex !== null) {
+                if (state.needFork) {
+                    fork(state.numIrreversible);
+                    state.needFork = false;
+                }
+                if (
+                    state.posts.length === 0 ||
+                    data.thisIndex === state.firstPost - 1
+                ) {
+                    state.posts.unshift({
+                        index: data.thisIndex,
+                        post: data.thisPost,
+                    });
+                    state.firstPost = data.thisIndex;
+                    setChangedCounter(++changedCounter);
+                } else if (
+                    data.thisIndex ===
+                    state.firstPost + state.posts.length
+                ) {
+                    state.posts.push({
+                        index: data.thisIndex,
+                        post: data.thisPost,
+                    });
+                    setChangedCounter(++changedCounter);
+                }
+            }
+            if (data.endRequest) {
+                state.loading = false;
+                setChangedCounter(++changedCounter);
+            }
+        };
+        state.ws.onclose = (e) => {
+            console.log("socket closed");
+            state.needFork = true;
+            state.loading = false;
+            setTimeout(createWS, 0);
+        };
+    }
+    React.useEffect(createWS, []);
+    React.useEffect(() => {
+        return () => {
+            state.reconnect = false;
+            if (state.ws) state.ws.close();
+        };
+    }, []);
+
+    return {
+        ...state,
+        loadMore() {
+            console.log("loadMore...");
+            if (state.posts.length === 0 && state.numAvailable) {
+                send({
+                    requestBeforeIndex: state.numAvailable,
+                    requestAfterIndex: null,
+                    requestCount: 10,
+                });
+                state.loading = true;
+            } else if (state.firstPost > 0) {
+                send({
+                    requestBeforeIndex: state.firstPost,
+                    requestAfterIndex: null,
+                    requestCount: 10,
+                });
+                state.loading = true;
+            }
+        },
+    };
+} // usePosts
+
+function Posts() {
+    const state = usePosts();
+    const [sentryRef, { rootRef }] = useInfiniteScroll({
+        loading: state.loading,
+        hasNextPage: state.firstPost > 0 || state.posts.length === 0,
+        onLoadMore: state.loadMore,
+    });
+    return (
+        <div
+            style={{
+                flexGrow: 1,
+                marginTop: 10,
+                overflowY: "scroll",
+            }}
+        >
+            {state.posts
+                .map((item, _) => (
+                    <div
+                        key={item.index}
+                        style={{ margin: 10, background: "cyan" }}
+                    >
+                        <table>
+                            <tbody>
+                                <tr>
+                                    <td>Number</td>
+                                    <td>{item.index}</td>
+                                </tr>
+                                <tr>
+                                    <td>User</td>
+                                    <td>{item.post.user}</td>
+                                </tr>
+                                <tr>
+                                    <td>Message</td>
+                                    <td>{item.post.message}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                ))
+                .reverse()}
+
+            {(state.firstPost > 0 || state.posts.length === 0) && (
+                <div ref={sentryRef} style={{ margin: 10, background: "cyan" }}>
+                    <table>
+                        <tbody>
+                            <tr>
+                                <td>Number</td>
+                                <td>Loading...</td>
+                            </tr>
+                            <tr>
+                                <td>User</td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td>Message</td>
+                                <td></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            )}
+        </div>
     );
 }
 
@@ -240,8 +419,17 @@ function Page() {
     return (
         <ToastProvider>
             <PostSessionContext.Provider value={loginHook}>
-                <Login />
-                <Post />
+                <div
+                    style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        height: "100%",
+                    }}
+                >
+                    <Login />
+                    <Poster />
+                    <Posts />
+                </div>
             </PostSessionContext.Provider>
         </ToastProvider>
     );
